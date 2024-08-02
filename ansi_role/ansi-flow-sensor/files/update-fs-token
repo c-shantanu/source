@@ -1,0 +1,19 @@
+# Check if the current user is ubuntu
+if [ "$USER" != "ubuntu" ]; then
+    echo "Switching to the ubuntu user..."
+    sudo su - ubuntu -c "$0"
+    exit
+fi
+
+# Prompt for Token input
+echo "Enter the API Key for the Flow Sensor :"
+read strToken
+
+sudo systemctl stop flow-sensor.service
+
+echo $strToken | sudo tee  /home/ubuntu/mountdir/am_config/refresh.tkn /home/ubuntu/mountdir/am_config/refresh.tkn_baseline
+
+/home/ubuntu/deployment-scripts/invoke_kickstart.sh
+
+#Restarting monitoring services
+sudo service prometheus restart

@@ -1,0 +1,95 @@
+---
+# tasks for deployment
+- name: Create deployment log
+  ansible.builtin.shell: date > /home/ubuntu/ansi_role/deployment.log
+
+- name: Redirect stdout and stderr to log
+  ansible.builtin.shell: |
+    exec &> /home/ubuntu/ansi_role/deployment.log
+
+# - name: Syntax check
+#   ansible.builtin.fail:
+#     msg: "Syntax error...\nUsage:\n> Deployment of FlowSensor : ./{{ ansible_playbook_name }}"
+#   when: ansible_playbook_args is defined and ansible_playbook_args | length > 1
+
+# - name: Check mandatory variables
+#   ansible.builtin.fail:
+#     msg: "Please define below mandatory parameters.\nenvironment\nlocation\nS3_BUCKET\naws_access_key_id\naws_secret_access_key\nSLACK_URL\nSLACK_CHANNEL\nDOCKER_USER\nDOCKER_PASS\nCONTAINER_REGISTRY"
+#   when: environment is not defined or location is not defined or S3_BUCKET is not defined or aws_access_key_id is not defined or aws_secret_access_key is not defined or SLACK_URL is not defined or SLACK_CHANNEL is not defined or DOCKER_USER is not defined or DOCKER_PASS is not defined or CONTAINER_REGISTRY is not defined
+
+- name: Source /etc/environment
+  ansible.builtin.shell: . /etc/environment
+  ignore_errors: yes
+
+- name: Ensure script is executable
+  ansible.builtin.file:
+    path: /home/ubuntu/ansi_role/install_dependencies.sh
+    mode: '0755'
+
+# - name: Run install_dependencies.sh script
+#   ansible.builtin.shell: /home/ubuntu/ansi_role/install_dependencies.sh
+#   register: install_dependencies_result
+#   ignore_errors: yes
+
+# - name: Fail if installing dependencies failed
+#   ansible.builtin.fail:
+#     msg: "install_dependencies.sh failed with exit status: {{ install_dependencies_result.rc }}"
+#   when: install_dependencies_result.failed
+
+
+
+# - name: Run Flow Sensor
+#   ansible.builtin.include_tasks:
+#     file: start_flow_sensor.sh
+#   register: start_flow_sensor_result
+
+# - name: Fail if Flow Sensor run failed
+#   ansible.builtin.fail:
+#     msg: "start_flow_sensor.sh failed with exit status: {{ start_flow_sensor_result.rc }}"
+#   when: start_flow_sensor_result.failed
+
+# - name: Configure system
+#   ansible.builtin.include_tasks:
+#     file: configure_system.sh
+#   register: configure_system_result
+
+# - name: Fail if system configuration failed
+#   ansible.builtin.fail:
+#     msg: "configure_system.sh failed with exit status: {{ configure_system_result.rc }}"
+#   when: configure_system_result.failed
+
+# - name: System cleanup
+#   ansible.builtin.include_tasks:
+#     file: cleanup.sh
+
+# - name: Perform FlowSensor post deployment health check
+#   ansible.builtin.shell: |
+#     health_check=0
+#     source ~/data/services.txt
+#     fs_containers=$(echo $services" redis")
+#     running_containers=$(docker ps --format '{{.Names}}' | tr "\n" "|" | sed 's:/*|$::')
+#     non_running_containers=$(echo $fs_containers | tr " " "\n" | grep -vE "$running_containers" | tr "\n" " ")
+
+#     echo "crontabs"
+#     crontab -l
+#     if [[ "$non_running_containers" == "" ]]; then
+#       echo -e "\n\nall required containers > $fs_containers < are running!"
+#     else
+#       health_check=1
+#       echo ">>>>>>>>>>>>> ERROR <<<<<<<<<<<<<"
+#       echo -e "Required containers > $fs_containers < !\nContainers > $non_running_containers < not running!\nPlease check the system."
+#       exit $health_check
+#     fi
+
+- name: Debug health check variables
+  ansible.builtin.shell: |
+    echo "fs_containers: $fs_containers"
+    echo "running_containers: $running_containers"
+    echo "non_running_containers: $non_running_containers"
+  register: debug_output
+  ignore_errors: yes
+
+- name: Print debug output
+  ansible.builtin.debug:
+    var: debug_output.stdout
+

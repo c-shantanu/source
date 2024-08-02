@@ -1,0 +1,19 @@
+#. Environment name or Tenant name
+
+#Tenant details.
+environment="ENVIRONMENT"
+location="LOCATION"
+
+#AWS resource details.
+S3_BUCKET="S3BUCKET"
+aws_access_key_id="AWSACCESSKEY"
+aws_secret_access_key="AWSSECRETACCESS"
+
+#Channel alerts.
+SLACK_URL="SLACKURL"
+SLACK_CHANNEL="SLACKCHANNEL"
+
+#Docker registry creds.
+DOCKER_USER="DOCKERUSER"
+DOCKER_PASS="DOCKERPASS"
+CONTAINER_REGISTRY="CONTAINERREGISTRY"

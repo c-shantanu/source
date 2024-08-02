@@ -1,0 +1,15 @@
+---
+- name: FlowSensor Deployment Playbook
+  hosts: localhost
+  remote_user: ubuntu
+  gather_facts: no
+  vars_files:
+    - deployment.config
+
+  tasks:
+    - name: Include initial setup tasks
+      include_tasks: initial-setup.yml
+
+    - name: Include deployment tasks
+      include_tasks: deployment.yml
+

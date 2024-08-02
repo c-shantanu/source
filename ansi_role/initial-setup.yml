@@ -1,0 +1,106 @@
+---
+# tasks for initial setup
+- name: Set DEBIAN_FRONTEND to noninteractive
+  ansible.builtin.shell: echo 'export DEBIAN_FRONTEND=noninteractive' >> /etc/environment
+
+- name: Ensure /tmp/deployment-scripts/ directory exists
+  ansible.builtin.file:
+    path: /tmp/deployment-scripts/
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copy deployment scripts to /tmp/deployment-scripts/ using rsync
+  ansible.builtin.command: rsync -av /home/ubuntu/ansi_role/ansi-flow-sensor/files/deployment-scripts/ /tmp/deployment-scripts/
+
+
+- name: Copy sudoers file
+  ansible.builtin.copy:
+    src: /tmp/sudoers
+    dest: /etc/sudoers
+    mode: '0440'
+
+- name: Disable execute permissions on all motd scripts
+  ansible.builtin.file:
+    path: /etc/update-motd.d/
+    state: directory
+    mode: '0755'
+    recurse: yes
+
+- name: Copy customized motd
+  ansible.builtin.copy:
+    src: /tmp/motd
+    dest: /etc/motd
+    mode: '0644'
+
+- name: Create deployment scripts directory
+  ansible.builtin.file:
+    path: /home/ubuntu/deployment-scripts/
+    state: directory
+    mode: '0755'
+    owner: ubuntu
+    group: ubuntu
+
+- name: Copy deployment scripts
+  ansible.builtin.copy:
+    src: /tmp/deployment-scripts/
+    dest: /home/ubuntu/deployment-scripts/
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copy deployment scripts using rsync
+  ansible.builtin.command: rsync -av /home/ubuntu/ansi_role/ansi-flow-sensor/files/deployment-scripts/ /tmp/deployment-scripts/
+
+- name: Copy kickstart.sh
+  ansible.builtin.copy:
+    src: /tmp/kickstart.sh
+    dest: /home/ubuntu/deployment-scripts/kickstart.sh
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copy sensor_ops directory
+  ansible.builtin.copy:
+    src: /tmp/sensor_ops
+    dest: /home/ubuntu/sensor_ops
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+    recurse: yes
+
+
+
+- name: Copy sync_flow_sensor.sh
+  ansible.builtin.copy:
+    src: /tmp/sync_flow_sensor.sh
+    dest: /home/ubuntu/sync_flow_sensor.sh
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+# - name: Create and format partition
+#   ansible.builtin.command: mkfs.ext4 /dev/nvme1n1
+#   register: mkfs_command
+
+# - name: Get UUID of the new partition
+#   ansible.builtin.command: blkid -s UUID -o value /dev/nvme1n1
+#   register: partition_uuid
+
+# - name: Add new partition to /etc/fstab
+#   ansible.builtin.lineinfile:
+#     path: /etc/fstab
+#     line: "UUID={{ partition_uuid.stdout }} /mnt ext4 defaults 0 0"
+#     state: present
+
+# - name: Mount all filesystems
+#   ansible.builtin.command: mount -a
+
+# - name: Change ownership of /mnt
+#   ansible.builtin.file:
+#     path: /mnt
+#     state: directory
+#     owner: ubuntu
+#     group: ubuntu
+#     recurse: yes
